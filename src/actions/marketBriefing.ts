@@ -67,10 +67,11 @@ export const marketBriefingAction: Action = {
     _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
-    const marketData = await gatherMarketData();
-    const userMsg = message.content.text ?? "";
+    try {
+      const marketData = await gatherMarketData();
+      const userMsg = message.content.text ?? "";
 
-    const prompt = `You are Sentinel, a crypto research analyst. Generate a concise market briefing using the data below.
+      const prompt = `You are Sentinel, a crypto research analyst. Generate a concise market briefing using the data below.
 
 Structure your response as:
 **Market Briefing — [Today's Date]**
@@ -94,12 +95,19 @@ ${marketData}
 
 User message: ${userMsg}`;
 
-    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
+      const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
-    if (callback) {
-      await callback({ text: response, action: "MARKET_BRIEFING" });
+      if (callback) {
+        await callback({ text: response, action: "MARKET_BRIEFING" });
+      }
+      return { text: response, success: true };
+    } catch (err) {
+      const errorMsg = "I encountered an issue generating the market briefing. Some data sources may be temporarily unavailable. Please try again in a moment.";
+      if (callback) {
+        await callback({ text: errorMsg, action: "MARKET_BRIEFING" });
+      }
+      return { text: errorMsg, success: false, error: String(err) };
     }
-    return { text: response, success: true };
   },
   examples: [
     [

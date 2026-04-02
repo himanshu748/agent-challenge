@@ -22,21 +22,22 @@ export const newsDigestAction: Action = {
     _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
-    const news = await getAllNews();
-    const userMsg = message.content.text ?? "";
+    try {
+      const news = await getAllNews();
+      const userMsg = message.content.text ?? "";
 
-    let newsData: string;
-    if (news.length > 0) {
-      const lines = news.map(
-        (item, i) =>
-          `${i + 1}. [${item.source}] ${item.title} (${item.pubDate ? new Date(item.pubDate).toLocaleDateString() : "recent"})`
-      );
-      newsData = lines.join("\n");
-    } else {
-      newsData = "No news headlines available at this time. RSS feeds may be rate-limited.";
-    }
+      let newsData: string;
+      if (news.length > 0) {
+        const lines = news.map(
+          (item, i) =>
+            `${i + 1}. [${item.source}] ${item.title} (${item.pubDate ? new Date(item.pubDate).toLocaleDateString() : "recent"})`
+        );
+        newsData = lines.join("\n");
+      } else {
+        newsData = "No news headlines available at this time. RSS feeds may be rate-limited.";
+      }
 
-    const prompt = `You are Sentinel, a crypto research analyst. Create a news digest from the headlines below.
+      const prompt = `You are Sentinel, a crypto research analyst. Create a news digest from the headlines below.
 
 Structure your response as:
 **Crypto News Digest**
@@ -56,12 +57,19 @@ ${newsData}
 
 User message: ${userMsg}`;
 
-    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
+      const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
-    if (callback) {
-      await callback({ text: response, action: "NEWS_DIGEST" });
+      if (callback) {
+        await callback({ text: response, action: "NEWS_DIGEST" });
+      }
+      return { text: response, success: true };
+    } catch (err) {
+      const errorMsg = "I encountered an issue fetching news. RSS feeds may be temporarily unavailable.";
+      if (callback) {
+        await callback({ text: errorMsg, action: "NEWS_DIGEST" });
+      }
+      return { text: errorMsg, success: false, error: String(err) };
     }
-    return { text: response, success: true };
   },
   examples: [
     [

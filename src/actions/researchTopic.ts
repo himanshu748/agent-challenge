@@ -95,8 +95,9 @@ export const researchTopicAction: Action = {
     _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
-    const { marketData, defiData, solanaData, newsData } = await gatherAllData();
-    const userMsg = message.content.text ?? "";
+    try {
+      const { marketData, defiData, solanaData, newsData } = await gatherAllData();
+      const userMsg = message.content.text ?? "";
 
     const prompt = `You are Sentinel, a crypto research analyst. The user wants to research a specific topic. Use ALL the data provided to give a thorough, data-backed analysis.
 
@@ -133,10 +134,17 @@ User's research question: ${userMsg}`;
 
     const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
-    if (callback) {
-      await callback({ text: response, action: "RESEARCH_TOPIC" });
+      if (callback) {
+        await callback({ text: response, action: "RESEARCH_TOPIC" });
+      }
+      return { text: response, success: true };
+    } catch (err) {
+      const errorMsg = "I encountered an issue during research. Some data sources may be temporarily unavailable.";
+      if (callback) {
+        await callback({ text: errorMsg, action: "RESEARCH_TOPIC" });
+      }
+      return { text: errorMsg, success: false, error: String(err) };
     }
-    return { text: response, success: true };
   },
   examples: [
     [

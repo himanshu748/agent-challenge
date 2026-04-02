@@ -1,6 +1,8 @@
 import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
+import { cached } from "../utils/cache.js";
 
 const DEFILLAMA_BASE = "https://api.llama.fi";
+const CACHE_TTL = 120_000; // 2 min
 
 interface Protocol {
   name: string;
@@ -30,24 +32,28 @@ async function fetchJSON<T>(url: string): Promise<T | null> {
   }
 }
 
+async function getAllProtocols(): Promise<Protocol[]> {
+  return cached("dl:protocols", CACHE_TTL, async () => {
+    const data = await fetchJSON<Protocol[]>(`${DEFILLAMA_BASE}/protocols`);
+    return data ?? [];
+  });
+}
+
 async function getTopProtocols(limit = 15): Promise<Protocol[]> {
-  const data = await fetchJSON<Protocol[]>(`${DEFILLAMA_BASE}/protocols`);
-  if (!data) return [];
-  return data
-    .filter((p) => p.tvl > 0)
-    .sort((a, b) => b.tvl - a.tvl)
-    .slice(0, limit);
+  const data = await getAllProtocols();
+  return data.filter((p) => p.tvl > 0).sort((a, b) => b.tvl - a.tvl).slice(0, limit);
 }
 
 async function getChainTVLs(): Promise<ChainTVL[]> {
-  const data = await fetchJSON<ChainTVL[]>(`${DEFILLAMA_BASE}/v2/chains`);
-  if (!data) return [];
-  return data.sort((a, b) => b.tvl - a.tvl).slice(0, 15);
+  return cached("dl:chains", CACHE_TTL, async () => {
+    const data = await fetchJSON<ChainTVL[]>(`${DEFILLAMA_BASE}/v2/chains`);
+    if (!data) return [];
+    return data.sort((a, b) => b.tvl - a.tvl).slice(0, 15);
+  });
 }
 
 async function getProtocolByName(name: string): Promise<Protocol | null> {
-  const data = await fetchJSON<Protocol[]>(`${DEFILLAMA_BASE}/protocols`);
-  if (!data) return null;
+  const data = await getAllProtocols();
   const lower = name.toLowerCase();
   return data.find((p) => p.name.toLowerCase() === lower || p.name.toLowerCase().includes(lower)) ?? null;
 }

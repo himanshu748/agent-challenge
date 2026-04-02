@@ -1,6 +1,8 @@
 import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
+import { cached } from "../utils/cache.js";
 
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
+const CACHE_TTL = 60_000; // 60s
 
 interface CoinMarketData {
   id: string;
@@ -34,22 +36,28 @@ async function fetchJSON<T>(url: string): Promise<T | null> {
 }
 
 async function getTopCoins(limit = 20): Promise<CoinMarketData[]> {
-  const data = await fetchJSON<CoinMarketData[]>(
-    `${COINGECKO_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=7d`
-  );
-  return data ?? [];
+  return cached(`cg:top:${limit}`, CACHE_TTL, async () => {
+    const data = await fetchJSON<CoinMarketData[]>(
+      `${COINGECKO_BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=${limit}&page=1&sparkline=false&price_change_percentage=7d`
+    );
+    return data ?? [];
+  });
 }
 
 async function getGlobalData(): Promise<GlobalData | null> {
-  const data = await fetchJSON<{ data: GlobalData }>(`${COINGECKO_BASE}/global`);
-  return data?.data ?? null;
+  return cached("cg:global", CACHE_TTL, async () => {
+    const data = await fetchJSON<{ data: GlobalData }>(`${COINGECKO_BASE}/global`);
+    return data?.data ?? null;
+  });
 }
 
 async function getCoinData(coinId: string): Promise<CoinMarketData | null> {
-  const coins = await fetchJSON<CoinMarketData[]>(
-    `${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${coinId}&sparkline=false&price_change_percentage=7d`
-  );
-  return coins?.[0] ?? null;
+  return cached(`cg:coin:${coinId}`, CACHE_TTL, async () => {
+    const coins = await fetchJSON<CoinMarketData[]>(
+      `${COINGECKO_BASE}/coins/markets?vs_currency=usd&ids=${coinId}&sparkline=false&price_change_percentage=7d`
+    );
+    return coins?.[0] ?? null;
+  });
 }
 
 function formatUSD(n: number): string {

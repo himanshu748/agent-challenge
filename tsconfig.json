@@ -5,11 +5,12 @@
     "moduleResolution": "Bundler",
     "strict": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "declaration": true
+    "declaration": true,
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "characters/**/*"],
   "exclude": ["node_modules", "dist"]
 }

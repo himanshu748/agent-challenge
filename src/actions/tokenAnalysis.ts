@@ -103,11 +103,12 @@ export const tokenAnalysisAction: Action = {
     _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
-    const tokenId = extractTokenId(message.content.text ?? "");
-    const tokenData = await gatherTokenData(tokenId);
-    const userMsg = message.content.text ?? "";
+    try {
+      const tokenId = extractTokenId(message.content.text ?? "");
+      const tokenData = await gatherTokenData(tokenId);
+      const userMsg = message.content.text ?? "";
 
-    const prompt = `You are Sentinel, a crypto research analyst. Analyze the token based on the data below.
+      const prompt = `You are Sentinel, a crypto research analyst. Analyze the token based on the data below.
 
 Structure your response as:
 **Token Analysis: [TOKEN NAME] ([SYMBOL])**
@@ -132,12 +133,19 @@ ${tokenData}
 
 User message: ${userMsg}`;
 
-    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
+      const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
-    if (callback) {
-      await callback({ text: response, action: "TOKEN_ANALYSIS" });
+      if (callback) {
+        await callback({ text: response, action: "TOKEN_ANALYSIS" });
+      }
+      return { text: response, success: true };
+    } catch (err) {
+      const errorMsg = "I encountered an issue analyzing this token. Some data sources may be temporarily unavailable.";
+      if (callback) {
+        await callback({ text: errorMsg, action: "TOKEN_ANALYSIS" });
+      }
+      return { text: errorMsg, success: false, error: String(err) };
     }
-    return { text: response, success: true };
   },
   examples: [
     [
