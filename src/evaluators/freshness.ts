@@ -1,11 +1,6 @@
-import {
-  type Evaluator,
-  type IAgentRuntime,
-  type Memory,
-  type State,
-} from "@elizaos/core";
+import type { Evaluator, IAgentRuntime, Memory, State } from "@elizaos/core";
 
-const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+const STALE_THRESHOLD_MS = 5 * 60 * 1000;
 
 function extractTimestamps(text: string): Date[] {
   const isoRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/g;
@@ -30,25 +25,31 @@ export const freshnessEvaluator: Evaluator = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state?: State
-  ): Promise<void> => {
+  ) => {
     const text = message.content.text ?? "";
     const timestamps = extractTimestamps(text);
     const now = Date.now();
+    let staleCount = 0;
 
     for (const ts of timestamps) {
       const age = now - ts.getTime();
       if (age > STALE_THRESHOLD_MS) {
-        console.warn(
-          `[Freshness] Stale data detected: ${ts.toISOString()} is ${Math.round(age / 1000)}s old`
-        );
+        staleCount++;
       }
     }
+
+    return {
+      success: staleCount === 0,
+      text: staleCount > 0
+        ? `${staleCount} data point(s) are stale (older than 5 minutes)`
+        : "All data points are fresh",
+    };
   },
   examples: [
     {
-      context: "Agent response contains market data with timestamps",
+      prompt: "Agent response contains market data with timestamps",
       messages: [
-        { user: "{{user1}}", content: { text: "Market briefing please" } },
+        { name: "{{user1}}", content: { text: "Market briefing please" } },
       ],
       outcome: "Check if data timestamps are within 5 minutes of current time",
     },

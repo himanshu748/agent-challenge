@@ -1,4 +1,4 @@
-import { type Provider, type IAgentRuntime, type Memory, type State } from "@elizaos/core";
+import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 const SOLANA_RPC = "https://api.mainnet-beta.solana.com";
 
@@ -72,11 +72,13 @@ function formatSOL(lamports: number): string {
 }
 
 export const solanaOnChainProvider: Provider = {
+  name: "solanaOnChain",
+  description: "Solana blockchain on-chain data via RPC",
   get: async (
     _runtime: IAgentRuntime,
     _message: Memory,
-    _state?: State
-  ): Promise<string> => {
+    _state: State
+  ): Promise<ProviderResult> => {
     const [epochInfo, perfSamples, supply] = await Promise.all([
       getEpochInfo(),
       getRecentPerformance(),
@@ -112,7 +114,7 @@ export const solanaOnChainProvider: Provider = {
       parts.push("\nSupply data: unavailable");
     }
 
-    return parts.join("\n");
+    return { text: parts.join("\n") };
   },
 };
 

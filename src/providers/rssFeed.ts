@@ -1,4 +1,4 @@
-import { type Provider, type IAgentRuntime, type Memory, type State } from "@elizaos/core";
+import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 interface FeedItem {
   title: string;
@@ -67,11 +67,13 @@ async function getAllNews(): Promise<FeedItem[]> {
 }
 
 export const rssFeedProvider: Provider = {
+  name: "rssFeed",
+  description: "Aggregated crypto news from CoinDesk, CoinTelegraph, and The Block",
   get: async (
     _runtime: IAgentRuntime,
     _message: Memory,
-    _state?: State
-  ): Promise<string> => {
+    _state: State
+  ): Promise<ProviderResult> => {
     const news = await getAllNews();
     const parts: string[] = ["[Crypto News Feeds]"];
     const timestamp = new Date().toISOString();
@@ -95,7 +97,7 @@ export const rssFeedProvider: Provider = {
       parts.push("\nNo news available (all feeds failed or rate-limited)");
     }
 
-    return parts.join("\n");
+    return { text: parts.join("\n") };
   },
 };
 

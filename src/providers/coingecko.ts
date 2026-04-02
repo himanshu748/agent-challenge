@@ -1,4 +1,4 @@
-import { type Provider, type IAgentRuntime, type Memory, type State } from "@elizaos/core";
+import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 const COINGECKO_BASE = "https://api.coingecko.com/api/v3";
 
@@ -67,11 +67,13 @@ function formatPct(n: number | null | undefined): string {
 }
 
 export const coingeckoProvider: Provider = {
+  name: "coingecko",
+  description: "Real-time cryptocurrency market data from CoinGecko",
   get: async (
     _runtime: IAgentRuntime,
     _message: Memory,
-    _state?: State
-  ): Promise<string> => {
+    _state: State
+  ): Promise<ProviderResult> => {
     const [topCoins, globalData] = await Promise.all([
       getTopCoins(10),
       getGlobalData(),
@@ -100,7 +102,7 @@ export const coingeckoProvider: Provider = {
       parts.push("\nTop coins data: unavailable");
     }
 
-    return parts.join("\n");
+    return { text: parts.join("\n") };
   },
 };
 

@@ -1,4 +1,4 @@
-import { type Provider, type IAgentRuntime, type Memory, type State } from "@elizaos/core";
+import type { Provider, IAgentRuntime, Memory, State, ProviderResult } from "@elizaos/core";
 
 const DEFILLAMA_BASE = "https://api.llama.fi";
 
@@ -66,11 +66,13 @@ function formatPct(n: number | null): string {
 }
 
 export const defillamaProvider: Provider = {
+  name: "defillama",
+  description: "DeFi protocol TVL data from DeFiLlama",
   get: async (
     _runtime: IAgentRuntime,
     _message: Memory,
-    _state?: State
-  ): Promise<string> => {
+    _state: State
+  ): Promise<ProviderResult> => {
     const [protocols, chains] = await Promise.all([
       getTopProtocols(10),
       getChainTVLs(),
@@ -102,7 +104,7 @@ export const defillamaProvider: Provider = {
       parts.push("\nProtocol data: unavailable");
     }
 
-    return parts.join("\n");
+    return { text: parts.join("\n") };
   },
 };
 

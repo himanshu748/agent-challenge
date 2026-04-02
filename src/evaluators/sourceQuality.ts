@@ -1,9 +1,4 @@
-import {
-  type Evaluator,
-  type IAgentRuntime,
-  type Memory,
-  type State,
-} from "@elizaos/core";
+import type { Evaluator, IAgentRuntime, Memory, State } from "@elizaos/core";
 
 const DATA_SOURCES = [
   { tag: "[CoinGecko", name: "CoinGecko", weight: 3 },
@@ -29,7 +24,7 @@ export const sourceQualityEvaluator: Evaluator = {
     _runtime: IAgentRuntime,
     message: Memory,
     _state?: State
-  ): Promise<void> => {
+  ) => {
     const text = message.content.text ?? "";
     const activeSources: string[] = [];
     let totalWeight = 0;
@@ -44,21 +39,17 @@ export const sourceQualityEvaluator: Evaluator = {
     const maxWeight = DATA_SOURCES.reduce((s, d) => s + d.weight, 0);
     const confidence = Math.round((totalWeight / maxWeight) * 100);
 
-    console.log(
-      `[SourceQuality] Active: ${activeSources.join(", ")} | Confidence: ${confidence}%`
-    );
-
-    if (activeSources.length < 2) {
-      console.warn(
-        "[SourceQuality] Low source diversity — response based on fewer than 2 sources"
-      );
-    }
+    return {
+      success: activeSources.length >= 2,
+      text: `Source confidence: ${confidence}% (${activeSources.join(", ")})`,
+      data: { confidence, activeSources },
+    };
   },
   examples: [
     {
-      context: "Agent response uses data from multiple providers",
+      prompt: "Agent response uses data from multiple providers",
       messages: [
-        { user: "{{user1}}", content: { text: "Give me a full research report" } },
+        { name: "{{user1}}", content: { text: "Give me a full research report" } },
       ],
       outcome: "Calculate confidence score based on number and weight of active data sources",
     },

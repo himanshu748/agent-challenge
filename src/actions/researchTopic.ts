@@ -1,50 +1,9 @@
-import {
-  type Action,
-  type IAgentRuntime,
-  type Memory,
-  type HandlerCallback,
-  type State,
-  ModelClass,
-  composeContext,
-  generateText,
-} from "@elizaos/core";
+import type { Action, IAgentRuntime, Memory, HandlerCallback, State } from "@elizaos/core";
+import { ModelType } from "@elizaos/core";
 import { getTopCoins, getGlobalData, formatUSD, formatPct } from "../providers/coingecko.js";
 import { getTopProtocols, getChainTVLs } from "../providers/defillama.js";
 import { getAllNews } from "../providers/rssFeed.js";
 import { getEpochInfo, getRecentPerformance } from "../providers/solanaOnChain.js";
-
-const RESEARCH_TEMPLATE = `You are Sentinel, a crypto research analyst. The user wants to research a specific topic. Use ALL the data provided to give a thorough, data-backed analysis.
-
-Structure your response as:
-**Research: [TOPIC]**
-
-**Summary:** 3-4 sentence overview answering the user's question.
-
-**Key Data Points:** Relevant numbers and metrics from the data sources.
-
-**Analysis:** Detailed interpretation. Connect data points. Identify trends.
-
-**Risk Factors:** What could go wrong or what's uncertain.
-
-**Further Research:** 2-3 specific follow-up questions the user might want to explore.
-
-**Sources:** List all data sources used.
-
-Available data:
-
-Market Data:
-{{marketData}}
-
-DeFi Data:
-{{defiData}}
-
-Solana On-Chain Data:
-{{solanaData}}
-
-Recent News Headlines:
-{{newsData}}
-
-User's research question: {{recentMessages}}`;
 
 async function gatherAllData(): Promise<{
   marketData: string;
@@ -132,42 +91,61 @@ export const researchTopicAction: Action = {
   handler: async (
     runtime: IAgentRuntime,
     message: Memory,
-    state: State | undefined,
-    _options: Record<string, unknown>,
+    state?: State,
+    _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
     const { marketData, defiData, solanaData, newsData } = await gatherAllData();
+    const userMsg = message.content.text ?? "";
 
-    const context = composeContext({
-      state: {
-        ...state,
-        marketData,
-        defiData,
-        solanaData,
-        newsData,
-      } as State,
-      template: RESEARCH_TEMPLATE,
-    });
+    const prompt = `You are Sentinel, a crypto research analyst. The user wants to research a specific topic. Use ALL the data provided to give a thorough, data-backed analysis.
 
-    const response = await generateText({
-      runtime,
-      context,
-      modelClass: ModelClass.LARGE,
-    });
+Structure your response as:
+**Research: [TOPIC]**
+
+**Summary:** 3-4 sentence overview answering the user's question.
+
+**Key Data Points:** Relevant numbers and metrics from the data sources.
+
+**Analysis:** Detailed interpretation. Connect data points. Identify trends.
+
+**Risk Factors:** What could go wrong or what's uncertain.
+
+**Further Research:** 2-3 specific follow-up questions the user might want to explore.
+
+**Sources:** List all data sources used.
+
+Available data:
+
+Market Data:
+${marketData}
+
+DeFi Data:
+${defiData}
+
+Solana On-Chain Data:
+${solanaData}
+
+Recent News Headlines:
+${newsData}
+
+User's research question: ${userMsg}`;
+
+    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
     if (callback) {
       await callback({ text: response, action: "RESEARCH_TOPIC" });
     }
-    return true;
+    return { text: response, success: true };
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Research the state of Solana DeFi" } },
-      { user: "{{agentName}}", content: { text: "Gathering data from all sources for a deep dive...", action: "RESEARCH_TOPIC" } },
+      { name: "{{user1}}", content: { text: "Research the state of Solana DeFi" } },
+      { name: "{{agentName}}", content: { text: "Gathering data from all sources for a deep dive...", action: "RESEARCH_TOPIC" } },
     ],
     [
-      { user: "{{user1}}", content: { text: "What's happening with Layer 2 scaling?" } },
-      { user: "{{agentName}}", content: { text: "Pulling market data, DeFi metrics, and news for your research...", action: "RESEARCH_TOPIC" } },
+      { name: "{{user1}}", content: { text: "What's happening with Layer 2 scaling?" } },
+      { name: "{{agentName}}", content: { text: "Pulling market data, DeFi metrics, and news for your research...", action: "RESEARCH_TOPIC" } },
     ],
   ],
 };

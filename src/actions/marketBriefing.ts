@@ -1,39 +1,7 @@
-import {
-  type Action,
-  type IAgentRuntime,
-  type Memory,
-  type HandlerCallback,
-  type State,
-  ModelClass,
-  composeContext,
-  generateText,
-} from "@elizaos/core";
+import type { Action, IAgentRuntime, Memory, HandlerCallback, State } from "@elizaos/core";
+import { ModelType } from "@elizaos/core";
 import { getTopCoins, getGlobalData, formatUSD, formatPct } from "../providers/coingecko.js";
 import { getTopProtocols, getChainTVLs } from "../providers/defillama.js";
-
-const BRIEFING_TEMPLATE = `You are Sentinel, a crypto research analyst. Generate a concise market briefing using the data below.
-
-Structure your response as:
-**Market Briefing — [Today's Date]**
-
-**Summary:** 2-3 sentence overview of market conditions.
-
-**Key Metrics:**
-- List the most important numbers (BTC, ETH, SOL prices, total market cap, DeFi TVL)
-
-**Top Movers:** Highlight 3-5 notable gainers/losers from the data.
-
-**DeFi Snapshot:** Key DeFi trends from the TVL data.
-
-**Analysis:** 2-3 sentences of market interpretation. Flag any risks.
-
-**Sources:** CoinGecko, DeFiLlama
-
-Here is the current market data:
-
-{{marketData}}
-
-User message: {{recentMessages}}`;
 
 async function gatherMarketData(): Promise<string> {
   const [topCoins, globalData, protocols, chains] = await Promise.all([
@@ -95,38 +63,52 @@ export const marketBriefingAction: Action = {
   handler: async (
     runtime: IAgentRuntime,
     message: Memory,
-    state: State | undefined,
-    _options: Record<string, unknown>,
+    state?: State,
+    _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
     const marketData = await gatherMarketData();
-    const context = composeContext({
-      state: {
-        ...state,
-        marketData,
-      } as State,
-      template: BRIEFING_TEMPLATE,
-    });
+    const userMsg = message.content.text ?? "";
 
-    const response = await generateText({
-      runtime,
-      context,
-      modelClass: ModelClass.LARGE,
-    });
+    const prompt = `You are Sentinel, a crypto research analyst. Generate a concise market briefing using the data below.
+
+Structure your response as:
+**Market Briefing — [Today's Date]**
+
+**Summary:** 2-3 sentence overview of market conditions.
+
+**Key Metrics:**
+- List the most important numbers (BTC, ETH, SOL prices, total market cap, DeFi TVL)
+
+**Top Movers:** Highlight 3-5 notable gainers/losers from the data.
+
+**DeFi Snapshot:** Key DeFi trends from the TVL data.
+
+**Analysis:** 2-3 sentences of market interpretation. Flag any risks.
+
+**Sources:** CoinGecko, DeFiLlama
+
+Here is the current market data:
+
+${marketData}
+
+User message: ${userMsg}`;
+
+    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
     if (callback) {
       await callback({ text: response, action: "MARKET_BRIEFING" });
     }
-    return true;
+    return { text: response, success: true };
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Give me a market briefing" } },
-      { user: "{{agentName}}", content: { text: "Generating your market briefing with the latest data...", action: "MARKET_BRIEFING" } },
+      { name: "{{user1}}", content: { text: "Give me a market briefing" } },
+      { name: "{{agentName}}", content: { text: "Generating your market briefing with the latest data...", action: "MARKET_BRIEFING" } },
     ],
     [
-      { user: "{{user1}}", content: { text: "What's the market doing today?" } },
-      { user: "{{agentName}}", content: { text: "Let me pull the latest market data for your briefing...", action: "MARKET_BRIEFING" } },
+      { name: "{{user1}}", content: { text: "What's the market doing today?" } },
+      { name: "{{agentName}}", content: { text: "Let me pull the latest market data for your briefing...", action: "MARKET_BRIEFING" } },
     ],
   ],
 };

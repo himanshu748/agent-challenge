@@ -1,40 +1,7 @@
-import {
-  type Action,
-  type IAgentRuntime,
-  type Memory,
-  type HandlerCallback,
-  type State,
-  ModelClass,
-  composeContext,
-  generateText,
-} from "@elizaos/core";
+import type { Action, IAgentRuntime, Memory, HandlerCallback, State } from "@elizaos/core";
+import { ModelType } from "@elizaos/core";
 import { getCoinData, formatUSD, formatPct } from "../providers/coingecko.js";
 import { getProtocolByName } from "../providers/defillama.js";
-
-const TOKEN_TEMPLATE = `You are Sentinel, a crypto research analyst. Analyze the token based on the data below.
-
-Structure your response as:
-**Token Analysis: [TOKEN NAME] ([SYMBOL])**
-
-**Price & Market Data:**
-- Current price, market cap, rank, 24h volume, price changes
-
-**DeFi Presence:** (if available)
-- TVL data, protocol info, chain presence
-
-**Strengths:** 2-3 bullet points on positive indicators
-
-**Risk Factors:** 2-3 bullet points on risks or concerns
-
-**Analysis:** 2-3 sentence interpretation of the data.
-
-**Sources:** CoinGecko, DeFiLlama
-
-Here is the token data:
-
-{{tokenData}}
-
-User message: {{recentMessages}}`;
 
 function extractTokenId(text: string): string {
   const lower = text.toLowerCase();
@@ -132,40 +99,54 @@ export const tokenAnalysisAction: Action = {
   handler: async (
     runtime: IAgentRuntime,
     message: Memory,
-    state: State | undefined,
-    _options: Record<string, unknown>,
+    state?: State,
+    _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
     const tokenId = extractTokenId(message.content.text ?? "");
     const tokenData = await gatherTokenData(tokenId);
+    const userMsg = message.content.text ?? "";
 
-    const context = composeContext({
-      state: {
-        ...state,
-        tokenData,
-      } as State,
-      template: TOKEN_TEMPLATE,
-    });
+    const prompt = `You are Sentinel, a crypto research analyst. Analyze the token based on the data below.
 
-    const response = await generateText({
-      runtime,
-      context,
-      modelClass: ModelClass.LARGE,
-    });
+Structure your response as:
+**Token Analysis: [TOKEN NAME] ([SYMBOL])**
+
+**Price & Market Data:**
+- Current price, market cap, rank, 24h volume, price changes
+
+**DeFi Presence:** (if available)
+- TVL data, protocol info, chain presence
+
+**Strengths:** 2-3 bullet points on positive indicators
+
+**Risk Factors:** 2-3 bullet points on risks or concerns
+
+**Analysis:** 2-3 sentence interpretation of the data.
+
+**Sources:** CoinGecko, DeFiLlama
+
+Here is the token data:
+
+${tokenData}
+
+User message: ${userMsg}`;
+
+    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
     if (callback) {
       await callback({ text: response, action: "TOKEN_ANALYSIS" });
     }
-    return true;
+    return { text: response, success: true };
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "Analyze SOL for me" } },
-      { user: "{{agentName}}", content: { text: "Pulling Solana data for analysis...", action: "TOKEN_ANALYSIS" } },
+      { name: "{{user1}}", content: { text: "Analyze SOL for me" } },
+      { name: "{{agentName}}", content: { text: "Pulling Solana data for analysis...", action: "TOKEN_ANALYSIS" } },
     ],
     [
-      { user: "{{user1}}", content: { text: "Tell me about Ethereum" } },
-      { user: "{{agentName}}", content: { text: "Fetching Ethereum metrics from multiple sources...", action: "TOKEN_ANALYSIS" } },
+      { name: "{{user1}}", content: { text: "Tell me about Ethereum" } },
+      { name: "{{agentName}}", content: { text: "Fetching Ethereum metrics from multiple sources...", action: "TOKEN_ANALYSIS" } },
     ],
   ],
 };

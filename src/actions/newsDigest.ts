@@ -1,34 +1,6 @@
-import {
-  type Action,
-  type IAgentRuntime,
-  type Memory,
-  type HandlerCallback,
-  type State,
-  ModelClass,
-  composeContext,
-  generateText,
-} from "@elizaos/core";
+import type { Action, IAgentRuntime, Memory, HandlerCallback, State } from "@elizaos/core";
+import { ModelType } from "@elizaos/core";
 import { getAllNews } from "../providers/rssFeed.js";
-
-const NEWS_TEMPLATE = `You are Sentinel, a crypto research analyst. Create a news digest from the headlines below.
-
-Structure your response as:
-**Crypto News Digest**
-
-**Top Stories:**
-Summarize the 5 most important/impactful headlines. For each:
-- One-line summary of what happened
-- Why it matters (brief)
-
-**Trends:** 1-2 sentences on recurring themes across the headlines.
-
-**Sources:** List the news outlets that provided data.
-
-Here are the latest crypto headlines:
-
-{{newsData}}
-
-User message: {{recentMessages}}`;
 
 export const newsDigestAction: Action = {
   name: "NEWS_DIGEST",
@@ -46,11 +18,12 @@ export const newsDigestAction: Action = {
   handler: async (
     runtime: IAgentRuntime,
     message: Memory,
-    state: State | undefined,
-    _options: Record<string, unknown>,
+    state?: State,
+    _options?: Record<string, unknown>,
     callback?: HandlerCallback
   ) => {
     const news = await getAllNews();
+    const userMsg = message.content.text ?? "";
 
     let newsData: string;
     if (news.length > 0) {
@@ -63,33 +36,41 @@ export const newsDigestAction: Action = {
       newsData = "No news headlines available at this time. RSS feeds may be rate-limited.";
     }
 
-    const context = composeContext({
-      state: {
-        ...state,
-        newsData,
-      } as State,
-      template: NEWS_TEMPLATE,
-    });
+    const prompt = `You are Sentinel, a crypto research analyst. Create a news digest from the headlines below.
 
-    const response = await generateText({
-      runtime,
-      context,
-      modelClass: ModelClass.LARGE,
-    });
+Structure your response as:
+**Crypto News Digest**
+
+**Top Stories:**
+Summarize the 5 most important/impactful headlines. For each:
+- One-line summary of what happened
+- Why it matters (brief)
+
+**Trends:** 1-2 sentences on recurring themes across the headlines.
+
+**Sources:** List the news outlets that provided data.
+
+Here are the latest crypto headlines:
+
+${newsData}
+
+User message: ${userMsg}`;
+
+    const response = await runtime.useModel(ModelType.TEXT_LARGE, { prompt });
 
     if (callback) {
       await callback({ text: response, action: "NEWS_DIGEST" });
     }
-    return true;
+    return { text: response, success: true };
   },
   examples: [
     [
-      { user: "{{user1}}", content: { text: "What's the latest crypto news?" } },
-      { user: "{{agentName}}", content: { text: "Pulling the latest headlines from crypto news feeds...", action: "NEWS_DIGEST" } },
+      { name: "{{user1}}", content: { text: "What's the latest crypto news?" } },
+      { name: "{{agentName}}", content: { text: "Pulling the latest headlines from crypto news feeds...", action: "NEWS_DIGEST" } },
     ],
     [
-      { user: "{{user1}}", content: { text: "Give me a news digest" } },
-      { user: "{{agentName}}", content: { text: "Aggregating news from multiple sources...", action: "NEWS_DIGEST" } },
+      { name: "{{user1}}", content: { text: "Give me a news digest" } },
+      { name: "{{agentName}}", content: { text: "Aggregating news from multiple sources...", action: "NEWS_DIGEST" } },
     ],
   ],
 };
