@@ -1,0 +1,21 @@
+{
+  "name": "sentinel-agent",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Sentinel — Personal crypto research agent powered by ElizaOS and Nosana decentralized GPU compute",
+  "scripts": {
+    "start": "elizaos start --character ./characters/sentinel.character.json",
+    "dev": "elizaos dev --character ./characters/sentinel.character.json"
+  },
+  "dependencies": {
+    "@elizaos/core": "^1.0.0",
+    "@elizaos/plugin-anthropic": "^1.5.12",
+    "@elizaos/plugin-bootstrap": "^1.0.0",
+    "@elizaos/plugin-openai": "^1.0.0"
+  },
+  "devDependencies": {
+    "@elizaos/cli": "^1.0.0",
+    "typescript": "^5.0.0"
+  }
+}
