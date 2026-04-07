@@ -25,6 +25,14 @@ RUN bun install --frozen-lockfile || bun install
 
 COPY . .
 
+# Replace default ElizaOS client with Sentinel custom frontend
+RUN CLIENT_DIR=$(find /app/node_modules/@elizaos/server/dist/client -maxdepth 0 2>/dev/null || echo "") && \
+    if [ -n "$CLIENT_DIR" ] && [ -d "$CLIENT_DIR" ]; then \
+      cp /app/frontend/index.html "$CLIENT_DIR/index.html" && \
+      cp /app/frontend/style.css "$CLIENT_DIR/style.css" && \
+      cp /app/frontend/app.js "$CLIENT_DIR/app.js"; \
+    fi
+
 RUN mkdir -p /app/data
 
 EXPOSE 3000

@@ -4,84 +4,147 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sentinel — Crypto Research Agent</title>
+  <meta name="description" content="Personal crypto research analyst powered by ElizaOS and Nosana decentralized GPU compute.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="app">
     <aside id="sidebar">
       <div class="logo">
-        <div class="logo-icon">S</div>
+        <div class="logo-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
         <div>
           <h1>Sentinel</h1>
           <p class="subtitle">Crypto Research Agent</p>
         </div>
       </div>
-      <div class="quick-actions">
-        <h3>Quick Actions</h3>
+
+      <div class="sidebar-section">
+        <h3 class="section-label">Quick Actions</h3>
         <button class="action-btn" data-action="Give me a market briefing">
-          <span class="action-icon">📊</span>Market Briefing
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></span>Market Briefing
         </button>
         <button class="action-btn" data-action="Analyze SOL for me">
-          <span class="action-icon">🔍</span>Analyze SOL
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>Analyze SOL
         </button>
         <button class="action-btn" data-action="What's the NOS price and Nosana ecosystem status?">
-          <span class="action-icon">⚡</span>Nosana Ecosystem
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span>Nosana Ecosystem
         </button>
         <button class="action-btn" data-action="What's the latest crypto news?">
-          <span class="action-icon">📰</span>News Digest
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg></span>News Digest
         </button>
         <button class="action-btn" data-action="Research the state of Solana DeFi">
-          <span class="action-icon">🔬</span>DeFi Research
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>DeFi Research
         </button>
         <button class="action-btn" data-action="Analyze BTC for me">
-          <span class="action-icon">₿</span>Bitcoin Analysis
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>Bitcoin Analysis
         </button>
         <button class="action-btn" data-action="Analyze ETH for me">
-          <span class="action-icon">◆</span>Ethereum Analysis
+          <span class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>Ethereum Analysis
         </button>
       </div>
+
+      <div class="sidebar-section data-sources">
+        <h3 class="section-label">Data Sources</h3>
+        <div class="source-grid">
+          <div class="source-chip" title="CoinGecko — Market data, prices, volume"><span class="source-dot live"></span>CoinGecko</div>
+          <div class="source-chip" title="DeFiLlama — TVL, protocol data"><span class="source-dot live"></span>DeFiLlama</div>
+          <div class="source-chip" title="RSS Feeds — CoinDesk, CoinTelegraph, The Block"><span class="source-dot live"></span>RSS Feeds</div>
+          <div class="source-chip" title="Solana RPC — On-chain metrics"><span class="source-dot live"></span>Solana RPC</div>
+        </div>
+      </div>
+
       <div class="sidebar-footer">
         <div class="status-indicator">
           <span id="status-dot" class="dot disconnected"></span>
           <span id="status-text">Disconnected</span>
         </div>
-        <p class="powered-by">Powered by ElizaOS × Nosana</p>
+        <div class="footer-links">
+          <a href="https://github.com/himanshu748/sentinel-nosana-agent" target="_blank" rel="noopener" title="GitHub">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <span class="footer-sep">·</span>
+          <span class="powered-by">ElizaOS × Nosana</span>
+        </div>
       </div>
     </aside>
+
     <main id="chat-area">
       <header id="chat-header">
         <div class="header-left">
-          <button id="menu-toggle" class="mobile-menu" aria-label="Menu">☰</button>
-          <h2>Sentinel Research Terminal</h2>
+          <button id="menu-toggle" class="mobile-menu" aria-label="Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="header-title">
+            <h2>Research Terminal</h2>
+            <span class="header-model" id="model-label">Qwen3.5-27B on Nosana GPU</span>
+          </div>
         </div>
         <div class="header-right">
-          <span class="badge">Live Data</span>
-          <span class="badge accent">Decentralized</span>
+          <span class="badge live-badge"><span class="badge-dot"></span>Live Data</span>
+          <span class="badge decentralized-badge">Decentralized</span>
         </div>
       </header>
+
       <div id="messages">
         <div class="welcome-message">
-          <div class="welcome-icon">🛡️</div>
+          <div class="welcome-shield">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
           <h2>Welcome to Sentinel</h2>
-          <p>Your personal crypto research analyst powered by decentralized GPU compute on the Nosana network.</p>
-          <p class="hint">Try asking for a market briefing, token analysis, or the latest news.</p>
+          <p>Your personal crypto research analyst powered by decentralized GPU compute on the <strong>Nosana</strong> network.</p>
+          <div class="welcome-features">
+            <div class="feature-card" data-action="Give me a market briefing">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
+              <div>
+                <div class="feature-title">Market Briefing</div>
+                <div class="feature-desc">Prices, volume, DeFi TVL, top movers</div>
+              </div>
+            </div>
+            <div class="feature-card" data-action="Analyze SOL for me">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+              <div>
+                <div class="feature-title">Token Analysis</div>
+                <div class="feature-desc">Deep-dive with on-chain metrics</div>
+              </div>
+            </div>
+            <div class="feature-card" data-action="What's the latest crypto news?">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg></div>
+              <div>
+                <div class="feature-title">News Digest</div>
+                <div class="feature-desc">CoinDesk, CoinTelegraph, The Block</div>
+              </div>
+            </div>
+            <div class="feature-card" data-action="Research the state of Solana DeFi">
+              <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+              <div>
+                <div class="feature-title">DeFi Research</div>
+                <div class="feature-desc">Multi-source deep research</div>
+              </div>
+            </div>
+          </div>
+          <p class="welcome-hint">Click a card above or type any question below</p>
         </div>
       </div>
+
       <div id="input-area">
         <div class="input-container">
-          <textarea id="user-input" placeholder="Ask Sentinel anything about crypto markets..." rows="1"></textarea>
+          <textarea id="user-input" placeholder="Ask Sentinel about crypto markets, tokens, DeFi, news..." rows="1"></textarea>
           <button id="send-btn" disabled aria-label="Send">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
           </button>
         </div>
-        <p class="disclaimer">Sentinel provides data, not financial advice. Always DYOR.</p>
+        <p class="disclaimer">Sentinel provides data and analysis, not financial advice. Always DYOR.</p>
       </div>
     </main>
   </div>
+
+  <div id="overlay" class="overlay"></div>
+
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/lib/marked.umd.min.js"></script>
   <script src="app.js"></script>
