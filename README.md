@@ -104,8 +104,8 @@ User Query (Chat Interface)
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/himanshu748/sentinel-nosana-agent.git
-cd sentinel-nosana-agent
+git clone https://github.com/himanshu748/agent-challenge.git
+cd agent-challenge
 cp .env.example .env
 bun install
 ```
@@ -151,8 +151,8 @@ Opens the Sentinel-branded research terminal at `http://localhost:5173`:
 docker build -t sentinel-agent:latest .
 
 # Tag and push to GHCR
-docker tag sentinel-agent:latest ghcr.io/himanshu748/sentinel-nosana-agent:latest
-docker push ghcr.io/himanshu748/sentinel-nosana-agent:latest
+docker tag sentinel-agent:latest ghcr.io/himanshu748/agent-challenge:latest
+docker push ghcr.io/himanshu748/agent-challenge:latest
 ```
 
 Then deploy via the [Nosana Dashboard](https://deploy.nosana.com/) using the job definition in `nos_job_def/`, or use the deploy scripts:
