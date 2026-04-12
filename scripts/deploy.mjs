@@ -15,7 +15,7 @@ async function deploy() {
     console.log('Creating Sentinel deployment on Nosana...');
     const deployment = await client.api.deployments.create({
       name: 'sentinel-agent',
-      market: '97G9NnvBDQ2WpKu6BGBEsFRF5MnujBBi9cSVPMnMFcEX',
+      market: '31P9d5ahEY9iSmZuXJ2xwJsbRztFK5AUCdkvgziUM3vn',
       timeout: 120,
       replicas: 1,
       strategy: 'SIMPLE',
@@ -52,8 +52,10 @@ async function deploy() {
 
     if (deployment?.id) {
       console.log('\nStarting deployment...');
-      const started = await client.api.deployments.start(deployment.id);
-      console.log('Started:', JSON.stringify(started, null, 2));
+      const dep = await client.api.deployments.get(deployment.id);
+      await dep.start();
+      console.log('Status:', dep.status);
+      console.log('Endpoint:', dep.endpoints?.[0]?.url);
       console.log('\nCheck status at: https://deploy.nosana.com');
     }
   } catch (err) {

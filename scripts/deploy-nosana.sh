@@ -4,10 +4,10 @@
 
 set -e
 
-API_BASE="https://dashboard.k8s.prd.nos.ci/api"
+API_BASE="https://dashboard.k8s.prd.nosana.com/api"
 API_KEY="${NOSANA_API_KEY:?Set NOSANA_API_KEY in your environment}"
 
-MARKET="97G9NnvBDQ2WpKu6BGBEsFRF5MnujBBi9cSVPMnMFcEX"
+MARKET="31P9d5ahEY9iSmZuXJ2xwJsbRztFK5AUCdkvgziUM3vn"
 
 echo "Creating Sentinel deployment on Nosana..."
 
